@@ -32,7 +32,7 @@ python -m src.train.train configurations/mv2_cpm.cfg
 python -m src.train.train configurations/mv2_hourglass.cfg
 ```
 
-The training parameters can be set in the [Configurations](https://github.com/yash21saraf/ActionRecognition) file. 
+The training parameters can be set in the [Configurations](https://github.com/yash21saraf/ActivityRecognition/tree/master/configurations) file. 
 By default for the CPM model the scale has been set to 1 and the image size as 192*192. 
 
 **Make sure you set the directory paths in the configurations folder.**

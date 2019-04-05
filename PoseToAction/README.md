@@ -44,7 +44,8 @@ This is the confusion matrix for the model.
 It can be clearly seen that the model is unable to differentiate between similar actions.
 For example the model confuses jogging and walking, boxing and clapping as the motion and poses are quite close to each other. 
 
-![image]()
+![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/confusionAction.png)
+
 
 The model accuracy of different paramter setting for block size and overlap lies between the range of 45-55 percent. 
 

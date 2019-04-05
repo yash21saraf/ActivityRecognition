@@ -92,7 +92,7 @@ actions = {"box": 1,
 ### Code Parameters
 
 - Modify the path in the dronesDataset.py file accordingly. 
-- Add the path for the model.pb file. (For creating model.pb file refer [Pose Estimation]())
+- Add the path for the model.pb file. (For creating model.pb file refer [Pose Estimation](https://github.com/yash21saraf/ActivityRecognition/tree/master/src))
 - Based on the architecture used add the name of the final layer of the model. 
     - For CPM model - Convolutional_Pose_Machine/stage_5_out
     - For Hourglass Model - hourglass_out_3
@@ -110,7 +110,7 @@ This tensor basically has 14 arrays each containing one keypoint.
 - The output heatmap dimensions are dependent on the scale set while training the model.
 - Heatmap dimension = Input image/scale
 - So, first method used was complicated which involved blob detection and interpolation of missing frames. 
-- Looking at the implementation details in the [PoseEstimation]() application the 
+- Looking at the implementation details in the [PoseEstimation](https://github.com/yash21saraf/ActivityRecognition/tree/master/src) application the 
 implementation has been modified. Now the gaussian filter of 5*5 has been applied to
 all 14 heatmaps and then index of the maimum value is used as the keypoint. 
 - Visualization functions were also created to verify the output of the model on the 
@@ -121,4 +121,9 @@ video stream.
 ```bash
 python -m PoseToAction.Preprocess.dronesDataset
 ```
+
+The result JSON structure is as follows - 
+
+![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/DRONESJSON.png)
+
 

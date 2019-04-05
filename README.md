@@ -1,46 +1,57 @@
 # Activity_Recognition
 
-The problem of Activity Recognition is being studied using Recurrent Neural Networks on Human Pose Estimates. 
+Activity Recognition has been studied using Human Pose Estimation. The details of the code have and how to run them have been
+added to the respective README.
 
-For, task simplicity we started with Single Person Pose Estimatin, where we have data collected by DRONES lab at UB for 7 classes. For the calculation of pose estimates the following Github Repository has been referred. 
+The first approach has been done using the Light Weight Pose Estimation by Edvard Hua. Details
+for the pose estimation can be found [here](https://github.com/yash21saraf/ActivityRecognition/tree/master/src).
 
-[Page not found · GitHub · GitHub](https://github.com/edvardHua/PoseEstimationForMobile)
+The poses extracted using Pose Estimation have been fed to the LSTM network with 2 cells. 
 
-This is the code by Edvard Hua for application of Pose Estimation on Android Devices using tflite and MACE. 
+The details and code is available in PoseToAction Directory. 
 
-The model training, model, tflite conversion code along with the Android Code is included in the repository. So, the pose extracted using the Repository returns 14 keypoints. 
+These are the results of the model as of now. 
 
-So, as a starting approach the LSTM network would be fed with the 14 * 2 points for each frame. Using a LSTM network the action would be predicted. 
 
-The WorkingDir has been created in the src folder to work on the same problem. 
-The test1.py is used to read the dataset and store the frame wise poses as an JSON format. 
+### Results
 
-The Pose Estimation model returns an Array of dimensions [1, width, height, 14], where all 14 arrays contains a HeatMap for a particular Joint.
+This is the confusion matrix for the model. 
 
-So, using Blob Detection the centroids of the HeatMaps are generated. Since, Blob Detection returns null values for some frames, interpolation has been used to fill in the remaining values. 
+It can be clearly seen that the model is unable to differentiate between similar actions.
+For example the model confuses jogging and walking, boxing and clapping as the motion and poses are quite close to each other. 
 
-Right now, working on the task of reading the JSON data and feeding it to an LSTM network to obtain a baseline model. 
+![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/confusionAction.png)
 
-## The link for the dataset and Models: 
 
-https://drive.google.com/drive/folders/1iyhklD5GUgLaT5MNza6jYRIyxjZnkQQ4?usp=sharing
+The model accuracy of different paramter setting for block size and overlap lies between the range of 45-55 percent. 
 
-The AI challeneger dataset can be found in hdd along with the checkpoints and tensorflow graph files. 
-The DRONES lab dataset is present as RadhaDataset which contains 7 classes. 
+This is decent for a base model. The dataset used here is very noisy. No preprocessing has been
+done here to account for camera movements, occlusions, missing parts, Low light, subject size, relative position to frame, etc
 
-The Pose Estimation has been trained on AI challenger. Using the model the poses are extracted from the RadhaDataset and saved as data.json in the training folder. The poses will now be used to train the LSTM network. 
+Addressing the above issues will help finetune the model. 
+
+
+### Current Task
+
+- Retraining the pose estimastion model with the scale value 1. 
+- Now the model only returns heatmaps for the pose. 
+- Outputting the features extracted by the mobilenet model along with the heatmaps and feeding 
+then to the LSTM. 
+- Trying other datasets like [UC Berkeley MHAD Dataset](http://tele-immersion.citris-uc.org/berkeley_mhad).
+- Stitching models for mobile Device implementation. 
+
+### MS Project Requirement Documents - 
 
 The Document links can be found below - 
 
-- Requirements Document - 
-https://docs.google.com/document/d/1l4sXT5vA_gSxC-7S-urvFv1tsdUcsJjET5-kk704RMo/edit?usp=sharing
+- [Requirements Document](https://docs.google.com/document/d/1l4sXT5vA_gSxC-7S-urvFv1tsdUcsJjET5-kk704RMo/edit?usp=sharing)
 
-- Technical Design - 
-https://docs.google.com/document/d/1V-XI6nPnCq88g-U6pkyce6Mv6UvVp5hW-nDUCUkS1w4/edit
+- [Technical Design](https://docs.google.com/document/d/1V-XI6nPnCq88g-U6pkyce6Mv6UvVp5hW-nDUCUkS1w4/edit)
 
-- Project Plan 
-https://docs.google.com/spreadsheets/d/1Yc387e71iDSWl4gIgV49CVoIBxLj38UCaLazNXwxMSI/edit?usp=sharing
+- [Project Plan](https://docs.google.com/spreadsheets/d/1Yc387e71iDSWl4gIgV49CVoIBxLj38UCaLazNXwxMSI/edit?usp=sharing)
 
-- Project Updates
-https://docs.google.com/document/d/1nL22u8UdTu127q7C94zHcQsjrAymY89q2r7TNtycJfg/edit?usp=sharing
-# ActivityRecognition
+- [Project Updates](https://docs.google.com/document/d/1nL22u8UdTu127q7C94zHcQsjrAymY89q2r7TNtycJfg/edit?usp=sharing)
+
+- [Test Plan](https://docs.google.com/document/d/1hLGOwoi4ub9VKGZYFguZkNeVEmiGH68hpVgesnLx-Xs/edit)
+
+
