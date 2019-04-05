@@ -40,18 +40,6 @@ then to the LSTM.
 - Trying other datasets like [UC Berkeley MHAD Dataset](http://tele-immersion.citris-uc.org/berkeley_mhad).
 - Stitching models for mobile Device implementation. 
 
-### MS Project Requirement Documents - 
-
-The Document links can be found below - 
-
-- [Requirements Document](https://docs.google.com/document/d/1l4sXT5vA_gSxC-7S-urvFv1tsdUcsJjET5-kk704RMo/edit?usp=sharing)
-
-- [Technical Design](https://docs.google.com/document/d/1V-XI6nPnCq88g-U6pkyce6Mv6UvVp5hW-nDUCUkS1w4/edit)
-
-- [Project Plan](https://docs.google.com/spreadsheets/d/1Yc387e71iDSWl4gIgV49CVoIBxLj38UCaLazNXwxMSI/edit?usp=sharing)
-
-- [Project Updates](https://docs.google.com/document/d/1nL22u8UdTu127q7C94zHcQsjrAymY89q2r7TNtycJfg/edit?usp=sharing)
-
-- [Test Plan](https://docs.google.com/document/d/1hLGOwoi4ub9VKGZYFguZkNeVEmiGH68hpVgesnLx-Xs/edit)
 
 
+### [Dataset Drive Link](https://drive.google.com/drive/folders/1m0StuUeys0jz8hAaxmykEgHIS7EpIIgv?usp=sharing)
