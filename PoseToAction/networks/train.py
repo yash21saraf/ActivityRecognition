@@ -6,24 +6,38 @@ import random
 import time
 
 
-LABELS = [
-    "box",
-    "clap",
-    "Jog",
-    "sit",
-    "stand",
-    "walk",
-    "wave"
-]
-DATASET_PATH = "/home/yash/ARdata/DRONESDatasetExperiments/"
+# LABELS = [
+#     "box",
+#     "clap",
+#     "Jog",
+#     "sit",
+#     "stand",
+#     "walk",
+#     "wave"
+# ]
 
-X_train_path = DATASET_PATH + "X_Train_moments.txt"
-X_test_path = DATASET_PATH + "X_Test_moments.txt"
+LABELS = ["jumping in place",
+          "jumping jacks",
+          "bending(hands up all the way down)",
+          "punching(boxing)",
+          "waving(two hands)",
+          "waving(right hand)",
+          "clapping hands",
+          "throwing a ball",
+          # "sit and stand",
+          "sit down",
+          "stand up"]
 
-y_train_path = DATASET_PATH + "Y_Train_moments.txt"
-y_test_path = DATASET_PATH + "Y_Test_moments.txt"
+DATASET_PATH = "/media/yash/Data/Dataset/BerkeleyMHAD/Camera/Cluster01Experiments/"
+# DATASET_PATH = "/home/yash/ARdata/DRONESDatasetExperiments/"
 
-n_steps = 48 # 48 timesteps per series
+X_train_path = DATASET_PATH + "X_Train.txt"
+X_test_path = DATASET_PATH + "X_Test.txt"
+
+y_train_path = DATASET_PATH + "Y_Train.txt"
+y_test_path = DATASET_PATH + "Y_Test.txt"
+
+n_steps = 32 # 48 timesteps per series
 
 
 # Load the networks inputs
@@ -74,7 +88,7 @@ test_data_count = len(X_test)
 n_input = len(X_train[0][0])
 
 n_hidden = 32 # Hidden layer num of features
-n_classes = 7
+n_classes = 10
 
 #updated for learning-rate decay
 # calculated as: decayed_learning_rate = learning_rate * decay_rate ^ (global_step / decay_steps)
@@ -98,7 +112,7 @@ print("\nThe dataset has not been preprocessed, is not normalised etc")
 
 def LSTM_RNN(_X, _weights, _biases):
     # model architecture based on "guillaume-chevalier" and "aymericdamien" under the MIT license.
-
+    _X = tf.identity(_X, name = "input_layer")
     _X = tf.transpose(_X, [1, 0, 2])  # permute n_steps and batch_size
     _X = tf.reshape(_X, [-1, n_input])
     # Rectifies Linear Unit activation function used
@@ -116,8 +130,10 @@ def LSTM_RNN(_X, _weights, _biases):
     lstm_last_output = outputs[-1]
 
     # Linear activation
-    return tf.matmul(lstm_last_output, _weights['out']) + _biases['out']
 
+    prev_ops = tf.matmul(lstm_last_output, _weights['out']) + _biases['out']
+    last_layer = tf.add(prev_ops, _biases['out'], name = "output_layer")
+    return last_layer
 
 def extract_batch_size(_train, _labels, _unsampled, batch_size):
     # Fetch a "batch_size" amount of data and labels from "(X|y)_train" data.
@@ -180,6 +196,10 @@ optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost,gl
 correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
+
+#####################################################
+saver = tf.train.Saver()
+##################################################33
 test_losses = []
 test_accuracies = []
 train_losses = []
@@ -187,6 +207,9 @@ train_accuracies = []
 sess = tf.InteractiveSession(config=tf.ConfigProto(log_device_placement=True))
 init = tf.global_variables_initializer()
 sess.run(init)
+
+
+
 
 # Perform Training steps with "batch_size" amount of data at each loop.
 # Elements of each batch are chosen randomly, without replacement, from X_train,
@@ -242,7 +265,7 @@ while step * batch_size <= training_iters:
               ", Accuracy = {}".format(acc))
 
     step += 1
-
+save_path = saver.save(sess, "/home/yash/Desktop/model.ckpt")
 print("Optimization Finished!")
 
 # Accuracy for test data
@@ -255,12 +278,15 @@ one_hot_predictions, accuracy, final_loss = sess.run(
     }
 )
 
+print(one_hot_predictions)
 test_losses.append(final_loss)
 test_accuracies.append(accuracy)
 
 print("FINAL RESULT: " + \
       "Batch Loss = {}".format(final_loss) + \
       ", Accuracy = {}".format(accuracy))
+
+
 time_stop = time.time()
 print("TOTAL TIME:  {}".format(time_stop - time_start))
 
