@@ -12,4 +12,4 @@ The path t0 the dataset needs to be defined.
 Whereas the test_folder runs the model on all the video files present in the folder. The test camera 
 takes the input of the webcam and runs the model live. 
 
-[![Model Performance](https://youtu.be/tCYAVXMYee0/0.jpg)](https://youtu.be/tCYAVXMYee0)
+[![Model Performance](https://img.youtube.com/vi/tCYAVXMYee0/0.jpg)](https://youtu.be/tCYAVXMYee0)

@@ -34,23 +34,3 @@ For training the model set the path in the newtworks.network.py and then run the
 ```bash
 python -m PoseToAction.networks.network
 ```
-
-This will train the LSTM Model and display the Confusion Matrix for the evaluation of the model. 
-
-## Results
-
-This is the confusion matrix for the model. 
-
-It can be clearly seen that the model is unable to differentiate between similar actions.
-For example the model confuses jogging and walking, boxing and clapping as the motion and poses are quite close to each other. 
-
-![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/confusionAction.png)
-
-
-The model accuracy of different paramter setting for block size and overlap lies between the range of 45-55 percent. 
-
-This is decent for a base model. The dataset used here is very noisy. No preprocessing has been
-done here to account for camera movements, occlusions, missing parts, Low light, subject size, relative position to frame, etc
-
-Addressing the above issues will help finetune the model. 
-

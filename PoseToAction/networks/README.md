@@ -24,7 +24,7 @@ Following is the representation for the Confusion Matrix-
 
 Following is the training curve - 
 
-![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/NTUConfusion.png)
+![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/NTUTraining.png)
 
 In total 40 subjects were part of the dataset creation. So to make sure the testing has been done on completely unseen dataset,
 10 subjects were seperated out. For training and validation rest of the dataset was used. 
