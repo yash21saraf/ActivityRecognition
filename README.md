@@ -27,6 +27,9 @@ a well lit room.
 So the Pose estimation on the data was performed, and the values were saved as the JSON file. For starters, we 
 only considered 4 classes i.e. throw, kick, jump, and salute. The results for the same can be found here. 
 
+**Following is the link to the Youtube Video**
+
+
 [![Model Performance](https://img.youtube.com/vi/tCYAVXMYee0/0.jpg)](https://youtu.be/tCYAVXMYee0)
 
 
