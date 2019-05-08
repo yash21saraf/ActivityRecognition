@@ -127,3 +127,27 @@ The result JSON structure is as follows -
 ![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/DRONESJSON.png)
 
 
+### BERKELEY MHAD DATASET
+
+**This is a diverse dataset containing 11 actions being performed by 12 subjects which has been
+recorded from multiple angles using multiple cameras. The image dataset is Black and White .pgm images**
+
+The dataset has been preprocessed using the same process as the above dataset. The major difference 
+is here for data augmentation we have used Video Augmentation library. 
+
+The dataset description can be checked in the following link - 
+
+http://tele-immersion.citris-uc.org/berkeley_mhad
+
+### NTU RGB-D DATASET
+
+**This is a diverse dataset containing 60 Actions. For starters we have only worked with 4 actions, 
+this helps in making sure the model being trained works in an ideal manner. So 4 classes i.e. jumping, 
+salute, throwing, and kicking.**
+
+The dataset has been preprocessed using the same process using Video Augmentation.
+The dataset description can be checked in the following link - 
+
+http://rose1.ntu.edu.sg/Datasets/actionRecognition.asp
+
+

@@ -6,12 +6,30 @@ from collections import defaultdict
 import time
 import json
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
-data_path = "/media/yash/Data/Dataset/BerkeleyMHAD/Camera/Cluster01"
+### Video Augmentation using rotation and translation
+####################################
+from vidaug import augmentors as va
+
+sometimes = lambda aug: va.Sometimes(0.5, aug) # Used to apply augmentor with 50% probability
+seq = va.Sequential([
+    # va.RandomCrop(size=(240, 180)), # randomly crop video with a size of (240 x 180)
+    va.RandomRotate(degrees=10), # randomly rotates the video with a degree randomly choosen from [-10, 10]
+    sometimes(va.HorizontalFlip()) # horizontally flip the video with 50% probability
+])
+
+###################################################################
+
+### Define the path of the Cluster for BerkeleyMHAD Dataset
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+data_path = "/media/yash/YASH-01/Datasets/BerkeleyMHAD/Camera/Cluster01"
+
+#### Define all the Pose Estimation model details
 input_w_h = 192
-frozen_graph = "/home/yash/Desktop/MSProj/Android_App/PoseEstimationForMobile/release/cpm_model/model.pb"
+frozen_graph = "/home/yash/Desktop/finalModels/pose/model.pb"
 output_node_names = "Convolutional_Pose_Machine/stage_5_out"
+### For Hourglass Model
+# output_node_names = "hourglass_out_3"
 
 with tf.gfile.GFile(frozen_graph, "rb") as f:
     restored_graph_def = tf.GraphDef()
@@ -31,23 +49,12 @@ output = graph.get_tensor_by_name("%s:0" % output_node_names)
 kernel = np.ones((5, 5), np.float32) / 25
 
 
-def display_joint(pred_heat=None):
-    cv2.imshow('HeatMap', cv2.resize(pred_heat, (800, 600)))
-    cv2.waitKey(1)
-
-
-def display_image(pred_heat=None):
-    tmp = np.amax(pred_heat, axis=2)
-    frame = cv2.resize(tmp, (800, 600))
-    time.sleep(0.1)
-    cv2.imshow('HeatMap', frame)
-    cv2.waitKey(1)
-
-
+### The nan helper is used while interpolating Nan Values
 def nan_helper(y):
     return np.isnan(y), lambda z: z.nonzero()[0]
 
-
+### The Nan interpolater averages the start and end and interpolates all the values in between
+### Used while calculating moments for calculating centroid
 def nan_interpolator(centroid_dict):
     for key, value in centroid_dict.items():
         new_value = np.asarray(value)
@@ -60,21 +67,64 @@ def nan_interpolator(centroid_dict):
         new_value = new_value.astype(np.float64)
         centroid_dict[key] = new_value
 
+### Used to read the entire dataset, use necessary augmentation and save the poses as and json file
+### Input : Pose Estimation session, Video file path, Camera Number, Subject Number, Name of Action, Repetition Number, and List of JSON
+def read_video_and_calculate_centroids_augmentation(sess, vid_path, camera, subject, name_of_action, repetition, list_of_json):
+    image_frames_array = []
+    current_vid_data = []
+    frame_path = ""
+    video_frames = os.listdir(vid_path)
+    video_frames.sort()
 
-def visualize_centroid(d1, d2, part):
-    arr = []
-    img = np.zeros((112, 112, 3), np.uint8)
-    xs = d1[part]
-    ys = d2[part]
-    for i in range(len(xs)):
-        img = cv2.circle(img, (int(xs[i]), int(ys[i])), 1, (0, 0, 255), -1)
-        # img = cv2.resize(img, (800, 600))
-        time.sleep(0.1)
-        cv2.imshow('ImageWindow', img)
+    ### Add the channels to BW image and resize the same and save as an numpy array for Video Augmentation
+    for frame in video_frames:
+        if frame[-4:] == ".pgm":
+            frame_path = vid_path + "/" + frame
+            image_ = cv2.imread(frame_path, -1)
+            if image_ is not None:
+                image_ = np.stack((image_,) * 3, axis=-1)
+                image_ = cv2.resize(image_, (input_w_h, input_w_h), interpolation=cv2.INTER_AREA)
+                image_frames_array.append(image_)
+
+    ### Apply transformation based on definition
+    video_aug = seq(image_frames_array)
+
+    ### Run pose estimation
+    for image_ in video_aug:
+        heatmaps = sess.run(output, feed_dict={image: [image_]})
+        heatmaps = heatmaps[0, :, :, :]
+
+        current_frame_data = []
+        for i in range(14):
+            heatmap_part = heatmaps[:, :, i]
+
+            heatmap_part = cv2.filter2D(heatmap_part, -1, kernel)
+            i1, j1 = np.unravel_index(heatmap_part.argmax(), heatmap_part.shape)
+            current_frame_data.append(int(i1))
+            current_frame_data.append(int(j1))
+            i1 = 2*i1
+            j1 = 2*j1
+            image_[i1, j1] = [0, 0, 255]
+            image_[i1 + 1, j1 + 1] = [0, 0, 255]
+            image_[i1, j1 + 1] = [0, 0, 255]
+            image_[i1 + 1, j1] = [0, 0, 255]
+            image_[i1 - 1,  j1 - 1] = [0, 0, 255]
+            image_[i1, j1 - 1] = [0, 0, 255]
+            image_[i1 - 1, j1] = [0, 0, 255]
+            image_[i1 - 1,  j1 + 1] = [0, 0, 255]
+            image_[i1 + 1,  j1 - 1] = [0, 0, 255]
+
+        frame = cv2.resize(image_, (800, 600))
+        time.sleep(1)
+        cv2.imshow('Image_Map', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    cv2.destroyAllWindows()
+        current_vid_data.append(current_frame_data)
+    print(frame_path)
+    print(len(current_vid_data))
+    json_data = save_json(vid_path, camera, subject, name_of_action, repetition, current_vid_data)
+    list_of_json.append(json_data)
 
 
 ## Here gaussian kernal of 5*5 size has been used and then the centroids hae been
@@ -91,9 +141,6 @@ def read_video_and_calculate_centroids(sess, vid_path, camera, subject, name_of_
                 image_ = np.stack((image_,) * 3, axis=-1)
                 image_ = cv2.resize(image_, (input_w_h, input_w_h), interpolation=cv2.INTER_AREA)
 
-                # cv2.imshow('ImageWindow', image_)
-                # if cv2.waitKey(1) & 0xFF == ord('q'):
-                #     break
 
                 heatmaps = sess.run(output, feed_dict={image: [image_]})
                 heatmaps = heatmaps[0, :, :, :]
@@ -107,12 +154,84 @@ def read_video_and_calculate_centroids(sess, vid_path, camera, subject, name_of_
                     current_frame_data.append(int(i1))
                     current_frame_data.append(int(j1))
 
+                    image_[2 * i1, 2 * j1] = [0, 0, 255]
+                    image_[2 * i1 + 1, 2 * j1 + 1] = [0, 0, 255]
+                    image_[2 * i1, 2 * j1 + 1] = [0, 0, 255]
+                    image_[2 * i1 + 1, 2 * j1] = [0, 0, 255]
+                    image_[2 * i1 - 1, 2 * j1 - 1] = [0, 0, 255]
+                    image_[2 * i1, 2 * j1 - 1] = [0, 0, 255]
+                    image_[2 * i1 - 1, 2 * j1] = [0, 0, 255]
+                    image_[2 * i1 - 1, 2 * j1 + 1] = [0, 0, 255]
+                    image_[2 * i1 + 1, 2 * j1 - 1] = [0, 0, 255]
+
+                frame = cv2.resize(image_, (800, 600))
+                time.sleep(3)
+                cv2.imshow('Image_Map', frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
                 current_vid_data.append(current_frame_data)
     print(frame_path)
     print(len(current_vid_data))
     json_data = save_json(vid_path, camera, subject, name_of_action, repetition, current_vid_data)
     list_of_json.append(json_data)
 
+def read_video_and_calculate_centroids_moments(sess, vid_path, camera, subject, name_of_action, repetition, list_of_json):
+    x = defaultdict(list)
+    y = defaultdict(list)
+    frame_path = ""
+    video_frames = os.listdir(vid_path)
+    for frame in video_frames:
+        if frame[-4:] == ".pgm":
+            frame_path = vid_path + "/" + frame
+            image_ = cv2.imread(frame_path, -1)
+            if image_ is not None:
+                image_ = np.stack((image_,) * 3, axis=-1)
+                image_ = cv2.resize(image_, (input_w_h, input_w_h), interpolation=cv2.INTER_AREA)
+                heatmaps = sess.run(output, feed_dict={image: [image_]})
+                heatmaps = heatmaps[0, :, :, :]
+
+                current_frame_data = []
+                for i in range(14):
+                    heatmap_part = heatmaps[:, :, i]
+
+                    heatmap_part = cv2.filter2D(heatmap_part, -1, kernel)
+
+                    ret, thresh = cv2.threshold(heatmap_part, 0.3, 1, 0)
+                    M = cv2.moments(thresh)
+
+                    if M["m00"] != 0:
+                        cX = int(M["m10"] / M["m00"])
+                        cY = int(M["m01"] / M["m00"])
+                    else:
+                        cX, cY = float('nan'), float('nan')
+
+                    x[i].append(cX)
+                    y[i].append(cY)
+    nan_interpolator(x)
+    nan_interpolator(y)
+    print(frame_path)
+    json_data = save_json_moments(vid_path, camera, subject, name_of_action, repetition, x, y)
+    list_of_json.append(json_data)
+
+def save_json_moments(vid_path, camera, subject, name_of_action, repetition, xs, ys):
+    frames = len(xs[0])
+    frame_data = []
+    for i in range(frames):
+        coordinates = []
+        for j in range(14):
+            coordinates.append(xs[j][i])
+            coordinates.append(ys[j][i])
+        frame_data.append(coordinates)
+    data = {
+        "path": vid_path,
+        "action": name_of_action,
+        "camera": camera,
+        "subject": subject,
+        "repetition": repetition,
+        "current_vid_data": frame_data
+    }
+    return data
 
 ## The results have been saved as a json file for convenience
 
@@ -129,7 +248,7 @@ def save_json(vid_path, camera, subject, name_of_action, repetition, current_vid
 
 counter = 0
 
-def writeBlock(block, file1, file2, file3, file4, i, total_vids, action):
+def writeBlock(block, file1, file2, file3, file4, action):
     global counter
     for frame_data in block:
         coords = ""
@@ -152,24 +271,7 @@ def writeBlock(block, file1, file2, file3, file4, i, total_vids, action):
         file4.write("\n")
         counter = 0
 
-    #     if i < 0.8 * 1440:
-    #         file1.write(coords)
-    #         file1.write("\n")
-    #
-    #     else:
-    #         file3.write(coords)
-    #         file3.write("\n")
-    #
-    # if i < 0.8 * 1440:
-    #     file2.write(action)
-    #     file2.write("\n")
-    #
-    # else:
-    #     file4.write(action)
-    #     file4.write("\n")
-
-
-def jsonToText(frames_per_block, overlap):
+def jsonToText(frames_per_block, overlap, skip_frames):
     import json
     from random import shuffle
 
@@ -192,7 +294,6 @@ def jsonToText(frames_per_block, overlap):
             list_of_json = list_of_json + file_data
 
     shuffle(list_of_json)
-    total_vids = len(list_of_json)
 
     i = 0
     for video in list_of_json:
@@ -210,17 +311,16 @@ def jsonToText(frames_per_block, overlap):
                     continue
                 else:
                     actions_count[video["action"]] += 1
-                writeBlock(block, file1, file2, file3, file4, i, total_vids, action)
+                writeBlock(block, file1, file2, file3, file4, action)
                 block.clear()
                 j -= overlap
-            j += 1
+            j += skip_frames
         i += 1
 
     file1.close()
     file2.close()
     file3.close()
     file4.close()
-
 
 def videoToJSON(data_path):
     with tf.Session() as sess:
@@ -239,9 +339,10 @@ def videoToJSON(data_path):
                         else:
                             name_of_action = inv_actions_dict[int(str(action)[1:])]
                         if action[0] != "B" and name_of_action != "T pose":
-                            vid_path = data_path + "/" + camera + "/" + subject + "/" + action + "/" + repetition
-                            read_video_and_calculate_centroids(sess, vid_path, camera, subject, name_of_action,
-                                                               repetition, list_of_json)
+                            if name_of_action == "clapping hands":
+                                    vid_path = data_path + "/" + camera + "/" + subject + "/" + action + "/" + repetition
+                                    read_video_and_calculate_centroids_augmentation(sess, vid_path, camera, subject, name_of_action,
+                                                                       repetition, list_of_json)
 
             fileNameNew = "BerkeleyMHAD" + camera + ".json"
             writePath = data_path + "Experiments/" + fileNameNew
@@ -254,12 +355,6 @@ def videoToJSON(data_path):
 
 
 ## Define mapping between the action and a number
-
-# actions_dict = {"jumping in place": 1, "jumping jacks": 2, "bending(hands up all the way down)": 3,
-#                 "punching(boxing)": 4,
-#                 "waving(two hands)": 5, "waving(right hand)": 6, "clapping hands": 7, "throwing a ball": 8,
-#                 "sit and stand": 9,
-#                 "sit down": 10, "stand up": 11}
 
 actions_dict = {"jumping in place": 1, "jumping jacks": 2, "bending(hands up all the way down)": 3,
                 "punching(boxing)": 4,
@@ -274,6 +369,6 @@ actions_count = {"jumping in place": 0, "jumping jacks": 0, "bending(hands up al
 inv_actions_dict = {v: k for k, v in actions_dict.items()}
 
 if __name__ == '__main__':
-    # videoToJSON(data_path)
-    jsonToText(32, 26)
+    videoToJSON(data_path)
+    # jsonToText(10, 8, 4)
     print(actions_count)

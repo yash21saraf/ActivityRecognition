@@ -25,7 +25,7 @@ parser.add_argument('--model', type=str, default='mv2_cpm', help='')
 parser.add_argument('--size', type=int, default=224)
 parser.add_argument('--checkpoint', type=str, default='', help='checkpoint path')
 parser.add_argument('--output_node_names', type=str, default='Convolutional_Pose_Machine/stage_5_out')
-parser.add_argument('--output_graph', type=str, default='./model.pb', help='output_freeze_path')
+parser.add_argument('--output_graph', type=str, default='./model11.pb', help='output_freeze_path')
 
 args = parser.parse_args()
 

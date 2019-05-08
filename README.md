@@ -1,5 +1,8 @@
 # Activity_Recognition
 
+
+The code will be updated very soon, the code requires better abstraction for reading data and processing.
+
 Activity Recognition has been studied using Human Pose Estimation. The details of the code have and how to run them have been
 added to the respective README.
 
@@ -15,31 +18,24 @@ These are the results of the model as of now.
 
 ### Results
 
-This is the confusion matrix for the model. 
+After working with Berkeley MHAD and DRONES lab dataset, we realized that the pose estimation being used
+for the models was not very accurate and needed to be tested on a more clean dataset. 
 
-It can be clearly seen that the model is unable to differentiate between similar actions.
-For example the model confuses jogging and walking, boxing and clapping as the motion and poses are quite close to each other. 
+So, NTU RGB-D Dataset provided with ample training data which has been recorded in a controlled environment in colored in 
+a well lit room. 
 
-![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/confusionAction.png)
+So the Pose estimation on the data was performed, and the values were saved as the JSON file. For starters, we 
+only considered 4 classes i.e. throw, kick, jump, and salute. The results for the same can be found here. 
 
-
-The model accuracy of different paramter setting for block size and overlap lies between the range of 45-55 percent. 
-
-This is decent for a base model. The dataset used here is very noisy. No preprocessing has been
-done here to account for camera movements, occlusions, missing parts, Low light, subject size, relative position to frame, etc
-
-Addressing the above issues will help finetune the model. 
+[![Model Performance](https://youtu.be/tCYAVXMYee0/0.jpg)](https://youtu.be/tCYAVXMYee0)
 
 
-### Current Task
+Following is the representation for the Confusion Matrix- 
+![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/NTUConfusion.png)
 
-- Retraining the pose estimastion model with the scale value 1. 
-- Now the model only returns heatmaps for the pose. 
-- Outputting the features extracted by the mobilenet model along with the heatmaps and feeding 
-then to the LSTM. 
-- Trying other datasets like [UC Berkeley MHAD Dataset](http://tele-immersion.citris-uc.org/berkeley_mhad).
-- Stitching models for mobile Device implementation. 
+Following is the training curve - 
 
+![image](https://github.com/yash21saraf/ActivityRecognition/blob/master/images/NTUConfusion.png)
 
-
-### [Dataset Drive Link](https://drive.google.com/drive/folders/1m0StuUeys0jz8hAaxmykEgHIS7EpIIgv?usp=sharing)
+In total 40 subjects were part of the dataset creation. So to make sure the testing has been done on completely unseen dataset,
+10 subjects were seperated out. For training and validation rest of the dataset was used. 

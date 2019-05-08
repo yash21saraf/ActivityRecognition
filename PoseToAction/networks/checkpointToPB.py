@@ -5,20 +5,23 @@ from sklearn import metrics
 import random
 import time
 
-LABELS = ["jumping in place",
-          "jumping jacks",
-          "bending(hands up all the way down)",
-          "punching(boxing)",
-          "waving(two hands)",
-          "waving(right hand)",
-          "clapping hands",
-          "throwing a ball",
-          # "sit and stand",
-          "sit down",
-          "stand up"]
+# LABELS = ["jumping in place",
+#           "jumping jacks",
+#           "bending(hands up all the way down)",
+#           "punching(boxing)",
+#           "waving(two hands)",
+#           "waving(right hand)",
+#           "clapping hands",
+#           "throwing a ball",
+#           # "sit and stand",
+#           "sit down",
+#           "stand up"]
 
-DATASET_PATH = "/media/yash/Data/Dataset/BerkeleyMHAD/Camera/Cluster01Experiments/"
+LABELS = ["A", "B", "C", "D"]
+# DATASET_PATH = "/media/yash/Data/Dataset/BerkeleyMHAD/Camera/Cluster01Experiments/"
 # DATASET_PATH = "/home/yash/ARdata/DRONESDatasetExperiments/"
+DATASET_PATH = "/media/yash/YASH-01/Datasets/ABCExperiments/"
+
 
 X_train_path = DATASET_PATH + "X_Train.txt"
 X_test_path = DATASET_PATH + "X_Test.txt"
@@ -26,7 +29,7 @@ X_test_path = DATASET_PATH + "X_Test.txt"
 y_train_path = DATASET_PATH + "Y_Train.txt"
 y_test_path = DATASET_PATH + "Y_Test.txt"
 
-n_steps = 32 # 48 timesteps per series
+n_steps = 48 # 48 timesteps per series
 
 
 # Load the networks inputs
@@ -77,7 +80,7 @@ test_data_count = len(X_test)
 n_input = len(X_train[0][0])
 
 n_hidden = 32 # Hidden layer num of features
-n_classes = 10
+n_classes = 4
 
 #updated for learning-rate decay
 # calculated as: decayed_learning_rate = learning_rate * decay_rate ^ (global_step / decay_steps)

@@ -10,7 +10,6 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 input_w_h = 192
 
-
 frozen_graph = "/home/yash/Desktop/finalModels/pose/model.pb"
 output_node_names = "Convolutional_Pose_Machine/stage_5_out"
 
@@ -55,6 +54,7 @@ def predict_action(block, sess1):
 
 
 ## Define mapping between the action and a number
+## Update mapping according to the Dataset for actions
 
 actions = {"jumping in place": 1, "jumping jacks": 2, "bending(hands up all the way down)": 3,
                 "punching(boxing)": 4,
